@@ -20,10 +20,13 @@ import json
 #   {'id': 3, 'name': 'Frontend developers'},
 # ]
 
-def test(request):
-  current_page = request.META['wsgi.url_scheme'] +'://' +request.META['HTTP_HOST'] + request.META['PATH_INFO']
-  referer = request.META.get('HTTP_REFERER', None)
-  return HttpResponse(current_page + ' - ' + referer)
+# def test(request):
+#   # current_page = request.META['wsgi.url_scheme'] +'://' +request.META['HTTP_HOST'] + request.META['PATH_INFO']
+#   # referer = request.META.get('HTTP_REFERER', None)
+#   # return HttpResponse(current_page + ' - ' + referer)
+#   # return HttpResponse('<h2>Hello, World!</h2>')
+#   context = {'myvar': 123, }
+#   return render(request, 'base/test.html', context)
 
 
 def loginPage(request):
@@ -76,7 +79,7 @@ def registerPage(request):
   return render(request, 'base/login_register.html', context)
 
 def home(request):
-  # return HttpResponse('Home Page')
+  
   
   topic = request.GET.get('topic','')
   # rooms = Room.objects.filter(topic__name__icontains=q)
@@ -98,7 +101,7 @@ def home(request):
   # room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
   # Filter messages of selected rooms only
   room_messages = Message.objects.filter(room__in=rooms)[0:8]
-
+  
   context = {
     'rooms': rooms, 
     'q_topic': topic,

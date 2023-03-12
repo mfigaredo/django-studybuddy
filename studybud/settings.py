@@ -43,16 +43,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'base.apps.BaseConfig',
     'rest_framework',
     'django_extensions',
     'corsheaders',
+    'base.apps.BaseConfig',
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware' if not DEBUG else None, 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,6 +60,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+MIDDLEWARE = [mdw for mdw in MIDDLEWARE if mdw is not None ]
+# print(MIDDLEWARE)
 
 ROOT_URLCONF = 'studybud.urls'
 
@@ -142,16 +145,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#     BASE_DIR / 'static',
-# ]
+
+# if DEBUG:
+#     STATICFILES_DIRS = [
+#         BASE_DIR / 'static',
+#     ]
 
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-if DEBUG:    
-    MEDIA_URL = '/images/'
+if DEBUG or True:    
+    MEDIA_URL = 'images/'
     MEDIA_ROOT = BASE_DIR / 'static/images'
 
 # Default primary key field type
