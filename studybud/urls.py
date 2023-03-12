@@ -17,10 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from test_media.views import DocumentCreateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('base.api.urls')),
+    path('test-media/', DocumentCreateView.as_view(), name='tm_home'),
     path('', include('base.urls')),
 ]
 

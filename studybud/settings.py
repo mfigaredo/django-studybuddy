@@ -14,7 +14,8 @@ from pathlib import Path
 import environ, os
 
 env = environ.Env(
-    DEBUG=(bool, False)
+    DEBUG=(bool, False),
+    LOCAL_DATABASE=(bool, True),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
+LOCAL_DATABASE = env('LOCAL_DATABASE')
 
 ALLOWED_HOSTS = ['*']
 
@@ -42,17 +44,21 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'rest_framework',
     'django_extensions',
     'corsheaders',
+    'storages',
+
     'base.apps.BaseConfig',
+    'test_media',
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware' if not DEBUG else None, 
+    'whitenoise.middleware.WhiteNoiseMiddleware', # if not DEBUG else None, 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -62,7 +68,6 @@ MIDDLEWARE = [
 ]
 
 MIDDLEWARE = [mdw for mdw in MIDDLEWARE if mdw is not None ]
-# print(MIDDLEWARE)
 
 ROOT_URLCONF = 'studybud.urls'
 
@@ -144,19 +149,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
+# Static Files locally via Whitenoise
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# if DEBUG:
-#     STATICFILES_DIRS = [
-#         BASE_DIR / 'static',
-#     ]
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media/images'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Config for Media Files in AWS
+AWS_S3_ACCESS_KEY_ID=env('AWS_S3_ACCESS_KEY_ID')
+AWS_S3_SECRET_ACCESS_KEY=env('AWS_S3_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME=env('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+DEFAULT_FILE_STORAGE = 'studybud.storage_backend.MediaStorage'
 
-MEDIA_URL = '/images/'
-MEDIA_ROOT = BASE_DIR / 'media/images'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -169,7 +180,11 @@ AUTH_USER_MODEL = 'base.User'
 
 
 # Render PostgreSQL database (live)
-import dj_database_url
-DATABASES = {
-    'default': dj_database_url.parse(env('DATABASE_URL'))
-}
+if not LOCAL_DATABASE:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(env('DATABASE_URL'))
+    }
+
+# print('Debug', DEBUG)
+# print('AWS_STORAGE_BUCKET_NAME', AWS_STORAGE_BUCKET_NAME)
