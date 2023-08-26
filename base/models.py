@@ -16,6 +16,9 @@ class User(AbstractUser, PermissionsMixin):
   USERNAME_FIELD = 'email'
   REQUIRED_FIELDS = []
 
+  class Meta:
+    db_table = 'studyb_users'
+
 class Topic(models.Model):
   name = models.CharField(max_length=200)
 
@@ -24,6 +27,9 @@ class Topic(models.Model):
 
   def orderByRooms(ord_t = -1):
     return Topic.objects.annotate(num_rooms=models.Count('room')).order_by(  ('' if ord_t != -1 else '-') +'num_rooms', 'name')
+
+  class Meta:
+    db_table = 'studyb_topics'
 
 class Room(models.Model):
   host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -36,6 +42,7 @@ class Room(models.Model):
 
   class Meta:
     ordering = ['-updated', '-created']
+    db_table = 'studyb_rooms'
 
   def __str__(self):
     return self.name
@@ -49,6 +56,7 @@ class Message(models.Model):
 
   class Meta:
     ordering = ['-updated', '-created']
+    db_table = 'studyb_messages'
 
   def __str__(self):
     return self.body[0:50]
